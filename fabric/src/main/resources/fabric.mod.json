@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "eepy_critters",
+  "version": "${version}",
+  "name": "Eepy Critters",
+  "description": "",
+  "authors": [
+    "tired9494"
+  ],
+  "contact": {
+    "homepage": ""
+  },
+  "license": "AGPL-3.0",
+  "icon": "assets/eepy_critters/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "tired9494.eepy_critters.fabric.Eepy_crittersFabric"
+    ],
+    "client": [
+      "tired9494.eepy_critters.fabric.client.Eepy_crittersFabricClient"
+    ]
+  },
+  "mixins": [
+    "eepy_critters.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "minecraft": "~1.21.8",
+    "java": ">=21",
+    "architectury": ">=17.0.8",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
