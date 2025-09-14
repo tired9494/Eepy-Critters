@@ -45,7 +45,9 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
-import tired9494.eepy_critters.common.Tags;
+import tired9494.eepy_critters.common.ModConfig;
+import tired9494.eepy_critters.common.ModTags;
+import tired9494.eepy_critters.common.registry_helpers.ModItems;
 
 import static software.bernie.geckolib.constant.DefaultAnimations.JUMP;
 
@@ -118,7 +120,7 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(Tags.Items.SPLASHLING_FOOD);
+        return stack.is(ModTags.Items.SPLASHLING_FOOD);
     }
 
     @Override
@@ -193,7 +195,9 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
 
     @Override
     public @NotNull ItemStack getBucketItemStack() {
-        return new ItemStack(tired9494.eepy_critters.common.registry_helpers.Items.SPLASHLING_BUCKET.get());
+        ItemStack itemStack = new ItemStack(ModItems.SPLASHLING_BUCKET.get());
+        itemStack.setDamageValue(ModConfig.splashlingBucketDurability()-1);
+        return itemStack;
     }
 
     @Override

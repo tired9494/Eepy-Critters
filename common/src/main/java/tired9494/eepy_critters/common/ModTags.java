@@ -5,7 +5,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import tired9494.eepy_critters.EepyCritters;
 
-public class Tags {
+public class ModTags {
     public static class Items {
         public static final TagKey<Item> SPLASHLING_FOOD = create("splashling_food");
 

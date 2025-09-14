@@ -12,7 +12,7 @@ import tired9494.eepy_critters.common.entities.Splashling;
 
 import java.util.function.Supplier;
 
-public class EntityTypes {
+public class ModEntityTypes {
 
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(EepyCritters.MOD_ID, Registries.ENTITY_TYPE);
 

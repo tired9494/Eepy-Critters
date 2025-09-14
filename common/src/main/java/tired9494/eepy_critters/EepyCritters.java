@@ -8,14 +8,14 @@ public final class EepyCritters {
     public static final String MOD_ID = "eepy_critters";
 
     public static void init() {
-        EntityTypes.initEntityTypes();
-        EntityTypeAttributes.initEntityAttributes();
-        EntitySpawnPlacements.initSpawnPlacements();
-        Items.initItems();
+        ModEntityTypes.initEntityTypes();
+        ModEntityAttributes.initEntityAttributes();
+        ModEntitySpawns.initSpawnPlacements();
+        ModItems.initItems();
 
         //only works for fabric, neoforge has additional register
         ClientLifecycleEvent.CLIENT_STARTED.register(listener -> {
-            EntityRenderers.initEntityRenderers();
+            ModEntityRenderers.initEntityRenderers();
         });
     }
 
