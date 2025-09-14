@@ -1,6 +1,5 @@
 package tired9494.eepy_critters.common.entities;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -16,30 +15,23 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Bucketable;
-import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -53,6 +45,7 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
+import tired9494.eepy_critters.common.Tags;
 
 import static software.bernie.geckolib.constant.DefaultAnimations.JUMP;
 
@@ -77,6 +70,18 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
 
     protected @NotNull PathNavigation createNavigation(Level level) {
         return new AmphibiousPathNavigation(this, level);
+    }
+
+    protected void registerGoals() {
+        //this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(0, new PanicGoal(this, (double)2.0F));
+        this.goalSelector.addGoal(1, new BreedGoal(this, (double)1.0F));
+        this.goalSelector.addGoal(2, new TemptGoal(this, (double)1.25F, (itemStack) -> itemStack.is(ItemTags.COW_FOOD), false));
+        this.goalSelector.addGoal(3, new FollowParentGoal(this, (double)1.25F));
+        this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, (double)1.1F, 200));
+        this.goalSelector.addGoal(5, new RandomStrollGoal(this, (double)1.0F));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
     public boolean canBeLeashed() {
@@ -106,20 +111,6 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
         this.setFromBucket(input.getBooleanOr("FromBucket", false));
     }
 
-    protected void registerGoals() {
-        //this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(0, new PanicGoal(this, (double)2.0F));
-        this.goalSelector.addGoal(1, new BreedGoal(this, (double)1.0F));
-        this.goalSelector.addGoal(2, new TemptGoal(this, (double)1.25F, (itemStack) -> itemStack.is(ItemTags.COW_FOOD), false));
-        this.goalSelector.addGoal(3, new FollowParentGoal(this, (double)1.25F));
-        this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, (double)1.1F, 200));
-        this.goalSelector.addGoal(5, new RandomStrollGoal(this, (double)1.0F));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-    }
-
-
-
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createAnimalAttributes()
                 .add(Attributes.MAX_HEALTH, (double)10.0F).add(Attributes.MOVEMENT_SPEED, (double)0.2F);
@@ -127,7 +118,7 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(ItemTags.AXOLOTL_FOOD);
+        return stack.is(Tags.Items.SPLASHLING_FOOD);
     }
 
     @Override
@@ -135,25 +126,22 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
         return null;
     }
 
-    /**
-     * Register your {@link AnimationController AnimationControllers} and their respective animations and conditions
-     * <p>
-     * Override this method in your animatable object and add your controllers via {@link AnimatableManager.ControllerRegistrar#add ControllerRegistrar.add}
-     * <p>
-     * You may add as many controllers as wanted
-     * <p>
-     * Each controller can only play <u>one</u> animation at a time, and so animations that you intend to play concurrently should be handled in independent controllers
-     * <p>
-     * Note having multiple animations playing via multiple controllers can override parts of one animation with another if both animations use the same bones or child bones
-     *
-     * @param controllers The object to register your controller instances to
-     */
+    public void travel(Vec3 travelVector) {
+        if (this.isInWater()) {
+            this.moveRelative(this.getSpeed(), travelVector);
+            this.move(MoverType.SELF, this.getDeltaMovement());
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.4));
+        } else {
+            super.travel(travelVector);
+        }
+
+    }
+
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        AnimationController<Splashling> controller = new AnimationController<>("controller", 2, this::animationHandler);
-        controllerRegistrar.add(new AnimationController<GeoAnimatable>("jump_controller", 0, animTest -> PlayState.STOP)
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<GeoAnimatable>("jump_controller", 0, animTest -> PlayState.STOP)
                 .triggerableAnim("jump", JUMP));
-        controllerRegistrar.add(DefaultAnimations.genericWalkIdleController().transitionLength(4));
+        controllers.add(DefaultAnimations.genericWalkIdleController().transitionLength(4));
     }
 
     private <H extends GeoAnimatable> PlayState animationHandler(AnimationTest<H> event) {
@@ -170,13 +158,6 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
             triggerAnim("jump_controller", "jump");
     }
 
-    /**
-     * Each instance of a {@code GeoAnimatable} must return an instance of an {@link AnimatableInstanceCache}, which handles instance-specific animation info
-     * <p>
-     * Generally speaking, you should create your cache using {@code GeckoLibUtil#createCache} and store it in your animatable instance, returning that cached instance when called
-     *
-     * @return A cached instance of an {@code AnimatableInstanceCache}
-     */
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.geoCache;
@@ -212,7 +193,7 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
 
     @Override
     public @NotNull ItemStack getBucketItemStack() {
-        return new ItemStack(Items.AXOLOTL_BUCKET);
+        return new ItemStack(tired9494.eepy_critters.common.registry_helpers.Items.SPLASHLING_BUCKET.get());
     }
 
     @Override

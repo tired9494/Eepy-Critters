@@ -1,9 +1,9 @@
 package tired9494.eepy_critters.fabric;
 
-import tired9494.eepy_critters.Eepy_critters;
+import tired9494.eepy_critters.EepyCritters;
 import net.fabricmc.api.ModInitializer;
 
-public final class Eepy_crittersFabric implements ModInitializer {
+public final class EepyCrittersFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -11,6 +11,6 @@ public final class Eepy_crittersFabric implements ModInitializer {
         // Proceed with mild caution.
 
         // Run our common setup.
-        Eepy_critters.init();
+        EepyCritters.init();
     }
 }

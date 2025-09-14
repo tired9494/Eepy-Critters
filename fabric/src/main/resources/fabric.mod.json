@@ -15,10 +15,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "tired9494.eepy_critters.fabric.Eepy_crittersFabric"
+      "tired9494.eepy_critters.fabric.EepyCrittersFabric"
     ],
     "client": [
-      "tired9494.eepy_critters.fabric.client.Eepy_crittersFabricClient"
+      "tired9494.eepy_critters.fabric.client.EepyCrittersFabricClient"
     ]
   },
   "mixins": [
