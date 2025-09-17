@@ -22,6 +22,7 @@ public final class EepyCrittersNeoForge {
         @SubscribeEvent
         public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(ModEntityTypes.SPLASHLING.get(), SplashlingRenderer::new);
+            event.registerEntityRenderer(ModEntityTypes.ASHLING.get(), AshlingRenderer::new);
         }
     }
 }

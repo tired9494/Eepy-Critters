@@ -9,7 +9,7 @@
   "eepy_critters.midnightconfig.category.splashling": "Splashling",
   "eepy_critters.midnightconfig.category.ashling": "Ashling",
   "eepy_critters.midnightconfig.splashlingBucketCapacity": "Splashling Bucket Capacity",
-  "eepy_critters.midnightconfig.splashlingBucketCapacity.tooltip": "The max number of water blocks the splashling bucket can contain",
+  "eepy_critters.midnightconfig.splashlingBucketCapacity.label.tooltip": "The max number of water blocks the splashling bucket can contain",
   "eepy_critters.midnightconfig.ashlingBucketCapacity": "Ashling Bucket Capacity",
-  "eepy_critters.midnightconfig.ashlingBucketCapacity.tooltip": "The max number of lava blocks the ashling bucket can contain"
+  "eepy_critters.midnightconfig.ashlingBucketCapacity.label.tooltip": "The max number of lava blocks the ashling bucket can contain"
 }

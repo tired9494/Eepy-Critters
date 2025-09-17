@@ -5,22 +5,16 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Strider;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -29,36 +23,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
 import tired9494.eepy_critters.common.ModTags;
 
-public class Ashling extends Splashling {
-    private TemptGoal temptGoal;
+public class Ashling extends AbstractSplashling {
     private static final ResourceLocation SUFFOCATING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("suffocating");
     private static final AttributeModifier SUFFOCATING_MODIFIER;
     private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING;
     public Ashling(EntityType<? extends Animal> entityType, Level level) {
-        super(entityType, level);
+        super(entityType, level, ModTags.Items.ASHLING_FOOD);
+        this.goToFluidGoal = new AshlingGoToLavaGoal(this, 1.0F);
         this.setPathfindingMalus(PathType.WATER, -1.0F);
         this.setPathfindingMalus(PathType.LAVA, 0.0F);
         this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
         this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
     }
 
-    protected void registerGoals() {
-        this.goalSelector.addGoal(1, new PanicGoal(this, 1.65));
-        this.goalSelector.addGoal(2, new BreedGoal(this, (double)1.0F));
-        this.temptGoal = new TemptGoal(this, 1.4, (itemStack) -> itemStack.is(ModTags.Items.ASHLING_FOOD), false);
-        this.goalSelector.addGoal(3, this.temptGoal);
-        this.goalSelector.addGoal(4, new Ashling.AshlingGoToLavaGoal(this, (double)1.0F));
-        this.goalSelector.addGoal(5, new FollowParentGoal(this, (double)1.0F));
-        this.goalSelector.addGoal(7, new RandomStrollGoal(this, (double)1.0F, 60));
-        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Ashling.class, 8.0F));
-    }
 
     public boolean isSensitiveToWater() {
         return true;
@@ -72,10 +53,6 @@ public class Ashling extends Splashling {
         return fluidState.is(FluidTags.LAVA);
     }
 
-    protected boolean shouldPassengersInheritMalus() {
-        return true;
-    }
-
     protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
         if (this.isInLava()) {
             this.resetFallDistance();
@@ -83,31 +60,13 @@ public class Ashling extends Splashling {
             super.checkFallDamage(y, onGround, state, pos);
         }
     }
-
-    @Override
-    public boolean isFood(ItemStack stack) {
-        return stack.is(ModTags.Items.ASHLING_FOOD);
-    }
-
-    public static AttributeSupplier.Builder createAttributes() {
-        return Animal.createAnimalAttributes()
-                .add(Attributes.MAX_HEALTH, (double)10.0F).add(Attributes.MOVEMENT_SPEED, (double)0.2F);
-    }
-
     public void tick() {
-        if (this.isBeingTempted() && this.random.nextInt(140) == 0) {
-            this.makeSound(SoundEvents.STRIDER_HAPPY);
-        } else if (this.isPanicking() && this.random.nextInt(60) == 0) {
-            this.makeSound(SoundEvents.STRIDER_RETREAT);
-        }
-
         if (!this.isNoAi()) {
             boolean warm;
             boolean mountedSuffocating;
             checkSuffocating: {
                 BlockState blockState = this.level().getBlockState(this.blockPosition());
-                BlockState blockState2 = this.getBlockStateOnLegacy();
-                warm = blockState.is(BlockTags.STRIDER_WARM_BLOCKS) || blockState2.is(BlockTags.STRIDER_WARM_BLOCKS) || this.getFluidHeight(FluidTags.LAVA) > (double)0.0F;
+                warm = blockState.is(BlockTags.STRIDER_WARM_BLOCKS) || this.getFluidHeight(FluidTags.LAVA) > (double)0.0F;
                 Entity mountedEntity = this.getVehicle();
                 if (mountedEntity instanceof Strider mountedStrider) {
                     if (mountedStrider.isSuffocating()) {
@@ -130,7 +89,7 @@ public class Ashling extends Splashling {
             if (collisionContext.isAbove(LiquidBlock.SHAPE_STABLE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
                 this.setOnGround(true);
             } else {
-                this.setDeltaMovement(this.getDeltaMovement().scale((double)0.5F).add((double)0.0F, 0.05, (double)0.0F));
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.5F).add(0.0F, 0.05, 0.0F));
             }
         }
 
@@ -166,7 +125,7 @@ public class Ashling extends Splashling {
     }
 
     public boolean isSuffocating() {
-        return (Boolean)this.entityData.get(DATA_SUFFOCATING);
+        return this.entityData.get(DATA_SUFFOCATING);
     }
 
     public void setSuffocating(boolean suffocating) {
@@ -188,12 +147,8 @@ public class Ashling extends Splashling {
     }
 
     static {
-        SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_ID, (double)-0.34F, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_ID, -0.34F, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         DATA_SUFFOCATING = SynchedEntityData.defineId(Ashling.class, EntityDataSerializers.BOOLEAN);
-    }
-
-    private boolean isBeingTempted() {
-        return this.temptGoal != null && this.temptGoal.isRunning();
     }
 
 }
