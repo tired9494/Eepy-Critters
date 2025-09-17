@@ -1,13 +1,16 @@
 package tired9494.eepy_critters;
 
 import dev.architectury.event.events.client.ClientLifecycleEvent;
+import eu.midnightdust.lib.config.MidnightConfig;
 import net.minecraft.resources.ResourceLocation;
+import tired9494.eepy_critters.common.ModConfig;
 import tired9494.eepy_critters.common.registry_helpers.*;
 
 public final class EepyCritters {
     public static final String MOD_ID = "eepy_critters";
 
     public static void init() {
+        MidnightConfig.init(MOD_ID, ModConfig.class);
         ModEntityTypes.initEntityTypes();
         ModEntityAttributes.initEntityAttributes();
         ModEntitySpawns.initSpawnPlacements();

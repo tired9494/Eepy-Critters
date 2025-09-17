@@ -29,14 +29,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import tired9494.eepy_critters.common.ModConfig;
 
 import static net.minecraft.world.level.block.LiquidBlock.LEVEL;
 
 public class SplashlingBucket extends MobBucketItem {
     private static final Logger LOGGER = LogUtils.getLogger();
-    public SplashlingBucket(EntityType<? extends Mob> type, Fluid content, SoundEvent emptySound, Properties properties) {
-        super(type, content, emptySound, properties.durability(ModConfig.splashlingBucketDurability()));
+    private static int MAX_DURABILITY;
+    public SplashlingBucket(EntityType<? extends Mob> type, Fluid content, SoundEvent emptySound, Properties properties, int durability) {
+        super(type, content, emptySound, properties.durability(durability));
+        MAX_DURABILITY = durability;
     }
 
     public @NotNull InteractionResult use(Level level, Player player, InteractionHand hand) {
@@ -56,7 +57,7 @@ public class SplashlingBucket extends MobBucketItem {
                 return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
             }
             else {
-                boolean releaseSplashling = !player.hasInfiniteMaterials() && itemStack.getDamageValue()+1 >= ModConfig.splashlingBucketDurability();
+                boolean releaseSplashling = !player.hasInfiniteMaterials() && itemStack.getDamageValue() + 1 >= MAX_DURABILITY;
                 if (tryEmptyBucket(level, player, itemStack, releaseSplashling)) {
                     if (player.hasInfiniteMaterials()) {
                         return InteractionResult.SUCCESS;

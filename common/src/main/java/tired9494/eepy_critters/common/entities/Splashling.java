@@ -78,7 +78,7 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
         //this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(0, new PanicGoal(this, (double)2.0F));
         this.goalSelector.addGoal(1, new BreedGoal(this, (double)1.0F));
-        this.goalSelector.addGoal(2, new TemptGoal(this, (double)1.25F, (itemStack) -> itemStack.is(ItemTags.COW_FOOD), false));
+        this.goalSelector.addGoal(2, new TemptGoal(this, (double)1.25F, (itemStack) -> itemStack.is(ModTags.Items.SPLASHLING_FOOD), false));
         this.goalSelector.addGoal(3, new FollowParentGoal(this, (double)1.25F));
         this.goalSelector.addGoal(4, new RandomSwimmingGoal(this, (double)1.1F, 200));
         this.goalSelector.addGoal(5, new RandomStrollGoal(this, (double)1.0F));
@@ -196,13 +196,13 @@ public class Splashling extends Animal implements GeoEntity, Bucketable {
     @Override
     public @NotNull ItemStack getBucketItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SPLASHLING_BUCKET.get());
-        itemStack.setDamageValue(ModConfig.splashlingBucketDurability()-1);
+        itemStack.setDamageValue(ModConfig.splashlingBucketCapacity-1);
         return itemStack;
     }
 
     @Override
     public @NotNull SoundEvent getPickupSound() {
-        return SoundEvents.BUCKET_FILL_AXOLOTL;
+        return SoundEvents.BUCKET_FILL;
     }
 
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {

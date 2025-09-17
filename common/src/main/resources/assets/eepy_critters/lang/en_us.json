@@ -1,5 +1,15 @@
 {
   "entity.eepy_critters.splashling": "Splashling",
   "item.eepy_critters.splashling_spawn_egg": "Splashling Spawn Egg",
-  "item.eepy_critters.splashling_bucket": "Bucket of Splashling"
+  "item.eepy_critters.splashling_bucket": "Bucket of Splashling",
+  "tag.item.eepy_critters.splashling_food": "Splashling food",
+  "tag.item.eepy_critters.ashling_food": "Ashling food",
+
+  "eepy_critters.midnightconfig.title": "Eepy Critters Config",
+  "eepy_critters.midnightconfig.category.splashling": "Splashling",
+  "eepy_critters.midnightconfig.category.ashling": "Ashling",
+  "eepy_critters.midnightconfig.splashlingBucketCapacity": "Splashling Bucket Capacity",
+  "eepy_critters.midnightconfig.splashlingBucketCapacity.tooltip": "The max number of water blocks the splashling bucket can contain",
+  "eepy_critters.midnightconfig.ashlingBucketCapacity": "Ashling Bucket Capacity",
+  "eepy_critters.midnightconfig.ashlingBucketCapacity.tooltip": "The max number of lava blocks the ashling bucket can contain"
 }

@@ -7,6 +7,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ModEntitySpawns {
     public static void initSpawnPlacements() {
+        //TODO: update spawn rules
         SpawnPlacementsRegistry.register(ModEntityTypes.SPLASHLING, SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
+        SpawnPlacementsRegistry.register(ModEntityTypes.ASHLING, SpawnPlacementTypes.IN_LAVA, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
     }
 }

@@ -22,6 +22,9 @@ allprojects {
             name = "Geckolib"
             url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
         }
+        maven {
+            url = "https://api.modrinth.com/maven"
+        }
     }
 }
 

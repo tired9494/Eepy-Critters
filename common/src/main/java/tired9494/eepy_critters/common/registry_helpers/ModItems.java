@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluids;
 import tired9494.eepy_critters.EepyCritters;
+import tired9494.eepy_critters.common.ModConfig;
 import tired9494.eepy_critters.common.items.SplashlingBucket;
 
 import java.util.function.Supplier;
@@ -19,11 +20,19 @@ public class ModItems {
 
     public static Supplier<Item> SPLASHLING_SPAWN_EGG;
     public static Supplier<Item> SPLASHLING_BUCKET;
+    public static Supplier<Item> ASHLING_SPAWN_EGG;
+    public static Supplier<Item> ASHLING_BUCKET;
     public static void initItems() {
         SPLASHLING_SPAWN_EGG = registerItem("splashling_spawn_egg", () ->
                 new ArchitecturySpawnEggItem(ModEntityTypes.SPLASHLING, baseProperties("splashling_spawn_egg").arch$tab(CreativeModeTabs.SPAWN_EGGS)));
         SPLASHLING_BUCKET = registerItem("splashling_bucket", () ->
-                new SplashlingBucket(ModEntityTypes.SPLASHLING.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY_AXOLOTL, baseProperties("splashling_bucket").arch$tab(CreativeModeTabs.TOOLS_AND_UTILITIES)));
+                new SplashlingBucket(ModEntityTypes.SPLASHLING.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY,
+                        baseProperties("splashling_bucket").arch$tab(CreativeModeTabs.TOOLS_AND_UTILITIES), ModConfig.splashlingBucketCapacity));
+        ASHLING_SPAWN_EGG = registerItem("ashling_spawn_egg", () ->
+                new ArchitecturySpawnEggItem(ModEntityTypes.ASHLING, baseProperties("ashling_spawn_egg").arch$tab(CreativeModeTabs.SPAWN_EGGS)));
+        ASHLING_BUCKET = registerItem("ashling_bucket", () ->
+                new SplashlingBucket(ModEntityTypes.ASHLING.get(), Fluids.LAVA, SoundEvents.BUCKET_EMPTY_LAVA,
+                        baseProperties("ashling_bucket").arch$tab(CreativeModeTabs.TOOLS_AND_UTILITIES), ModConfig.ashlingBucketCapacity));
 
         ITEMS.register();
     }
