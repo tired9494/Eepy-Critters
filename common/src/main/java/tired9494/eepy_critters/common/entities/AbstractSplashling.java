@@ -45,8 +45,7 @@ public class AbstractSplashling extends Animal implements GeoEntity, Bucketable 
     protected MoveToBlockGoal goToFluidGoal;
     private final TagKey<Item> foodTag;
     private static final EntityDataAccessor<Boolean> FROM_BUCKET;
-    private static final boolean DEFAULT_FROM_BUCKET = false;
-    private static final Logger LOGGER = LogUtils.getLogger();
+    //private static final Logger LOGGER = LogUtils.getLogger();
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
     public AbstractSplashling(EntityType<? extends Animal> entityType, Level level, TagKey<Item> foodTag) {
@@ -108,7 +107,7 @@ public class AbstractSplashling extends Animal implements GeoEntity, Bucketable 
 
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createAnimalAttributes()
-                .add(Attributes.MAX_HEALTH, (double)10.0F).add(Attributes.MOVEMENT_SPEED, (double)0.2F);
+                .add(Attributes.MAX_HEALTH, 10.0F).add(Attributes.MOVEMENT_SPEED, 0.2F);
     }
 
     @Override

@@ -5,9 +5,12 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -25,7 +28,9 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import tired9494.eepy_critters.common.ModTags;
+import tired9494.eepy_critters.common.registry_helpers.ModEntityTypes;
 
 public class Ashling extends AbstractSplashling {
     private static final ResourceLocation SUFFOCATING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("suffocating");
@@ -53,6 +58,12 @@ public class Ashling extends AbstractSplashling {
         return fluidState.is(FluidTags.LAVA);
     }
 
+    @Override
+    public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
+        Ashling ashling = ModEntityTypes.ASHLING.get().create(level, EntitySpawnReason.BREEDING);
+        return ashling;
+    }
+
     protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
         if (this.isInLava()) {
             this.resetFallDistance();
@@ -62,25 +73,18 @@ public class Ashling extends AbstractSplashling {
     }
     public void tick() {
         if (!this.isNoAi()) {
-            boolean warm;
-            boolean mountedSuffocating;
-            checkSuffocating: {
-                BlockState blockState = this.level().getBlockState(this.blockPosition());
-                warm = blockState.is(BlockTags.STRIDER_WARM_BLOCKS) || this.getFluidHeight(FluidTags.LAVA) > (double)0.0F;
-                Entity mountedEntity = this.getVehicle();
-                if (mountedEntity instanceof Strider mountedStrider) {
-                    if (mountedStrider.isSuffocating()) {
-                        mountedSuffocating = true;
-                        break checkSuffocating;
-                    }
-                }
-
-                mountedSuffocating = false;
-            }
-            this.setSuffocating(!warm || mountedSuffocating);
+            this.setSuffocating(checkSuffocating());
         }
         super.tick();
         this.floatAshling();
+    }
+
+    private boolean checkSuffocating() {
+        BlockState blockState = this.level().getBlockState(this.blockPosition());
+        boolean warm = blockState.is(BlockTags.STRIDER_WARM_BLOCKS) || this.getFluidHeight(FluidTags.LAVA) > (double)0.0F;
+        if (!warm) return true;
+        Entity mountedEntity = this.getVehicle();
+        return mountedEntity instanceof Ashling mountedAshling && mountedAshling.isSuffocating();
     }
 
     private void floatAshling() {
