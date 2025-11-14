@@ -6,6 +6,7 @@ import tired9494.eepy_critters.common.entities.Ashling;
 
 public class AshlingModel extends DefaultedEntityGeoModel<Ashling> {
     public AshlingModel() {
-        super(EepyCritters.id("ashling"));
+        super(EepyCritters.id("splashling"), true);
+        withAltTexture(EepyCritters.id("ashling"));
     }
 }

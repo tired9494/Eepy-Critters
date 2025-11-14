@@ -15,9 +15,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
+import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Strider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -37,14 +38,13 @@ public class Ashling extends AbstractSplashling {
     private static final AttributeModifier SUFFOCATING_MODIFIER;
     private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING;
     public Ashling(EntityType<? extends Animal> entityType, Level level) {
-        super(entityType, level, ModTags.Items.ASHLING_FOOD);
-        this.goToFluidGoal = new AshlingGoToLavaGoal(this, 1.0F);
+        super(entityType, level, ModTags.Items.ASHLING_FOOD, FluidTags.LAVA);
         this.setPathfindingMalus(PathType.WATER, -1.0F);
         this.setPathfindingMalus(PathType.LAVA, 0.0F);
         this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
         this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
-    }
 
+    }
 
     public boolean isSensitiveToWater() {
         return true;
@@ -97,35 +97,6 @@ public class Ashling extends AbstractSplashling {
             }
         }
 
-    }
-
-    static class AshlingGoToLavaGoal extends MoveToBlockGoal {
-        private final Ashling ashling;
-
-        AshlingGoToLavaGoal(Ashling ashling, double speedModifier) {
-            super(ashling, speedModifier, 8, 2);
-            this.ashling = ashling;
-        }
-
-        public @NotNull BlockPos getMoveToTarget() {
-            return this.blockPos;
-        }
-
-        public boolean canContinueToUse() {
-            return !this.ashling.isInLava() && this.isValidTarget(this.ashling.level(), this.blockPos);
-        }
-
-        public boolean canUse() {
-            return !this.ashling.isInLava() && super.canUse();
-        }
-
-        public boolean shouldRecalculatePath() {
-            return this.tryTicks % 20 == 0;
-        }
-
-        protected boolean isValidTarget(LevelReader level, BlockPos pos) {
-            return level.getBlockState(pos).is(Blocks.LAVA) && level.getBlockState(pos.above()).isPathfindable(PathComputationType.LAND);
-        }
     }
 
     public boolean isSuffocating() {

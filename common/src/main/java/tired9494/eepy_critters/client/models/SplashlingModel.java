@@ -6,6 +6,6 @@ import tired9494.eepy_critters.common.entities.Splashling;
 
 public class SplashlingModel extends DefaultedEntityGeoModel<Splashling> {
     public SplashlingModel() {
-        super(EepyCritters.id("splashling"));
+        super(EepyCritters.id("splashling"), true);
     }
 }

@@ -1,6 +1,6 @@
 package tired9494.eepy_critters.common.entities;
 
-import com.mojang.logging.LogUtils;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -22,11 +23,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -41,18 +46,16 @@ import tired9494.eepy_critters.common.registry_helpers.ModItems;
 import static software.bernie.geckolib.constant.DefaultAnimations.JUMP;
 
 public class AbstractSplashling extends Animal implements GeoEntity, Bucketable {
-    private final TemptGoal temptGoal;
-    protected MoveToBlockGoal goToFluidGoal;
-    private final TagKey<Item> foodTag;
+    private final TagKey<Item> temptingFood;
+    private final TagKey<Fluid> preferredFluid;
     private static final EntityDataAccessor<Boolean> FROM_BUCKET;
     //private static final Logger LOGGER = LogUtils.getLogger();
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
-    public AbstractSplashling(EntityType<? extends Animal> entityType, Level level, TagKey<Item> foodTag) {
+    public AbstractSplashling(EntityType<? extends Animal> entityType, Level level, TagKey<Item> temptingFood, TagKey<Fluid> preferredFluid) {
         super(entityType, level);
-        this.goToFluidGoal = null;
-        this.foodTag = foodTag;
-        this.temptGoal = new TemptGoal(this, 1.2, (itemStack) -> itemStack.is(foodTag), false);
+        this.temptingFood = temptingFood;
+        this.preferredFluid = preferredFluid;
     }
 
     public boolean isPushedByFluid() {
@@ -68,14 +71,14 @@ public class AbstractSplashling extends Animal implements GeoEntity, Bucketable 
     }
 
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new PanicGoal(this, 1.5F));
-        this.goalSelector.addGoal(2, new BreedGoal(this, 1.0F));
-        this.goalSelector.addGoal(3, temptGoal);
-        this.goalSelector.addGoal(4, goToFluidGoal);
-        this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.15F));
-        this.goalSelector.addGoal(6, new RandomStrollGoal(this, 1.0F));
-        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(0, new PanicGoal(this, 1.5F));
+        this.goalSelector.addGoal(1, new BreedGoal(this, 1.0F));
+        this.goalSelector.addGoal(2, new TemptGoal(this, 1.2, (itemStack) -> itemStack.is(this.temptingFood), false));
+        this.goalSelector.addGoal(3, new goToFluidGoal(this));
+        this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.15F));
+        this.goalSelector.addGoal(5, new RandomStrollGoal(this, 1.0F));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
     public boolean canBeLeashed() {
@@ -112,7 +115,7 @@ public class AbstractSplashling extends Animal implements GeoEntity, Bucketable 
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(foodTag);
+        return stack.is(temptingFood);
     }
 
     @Override
@@ -172,6 +175,41 @@ public class AbstractSplashling extends Animal implements GeoEntity, Bucketable 
     @Override
     public @NotNull SoundEvent getPickupSound() {
         return SoundEvents.BUCKET_FILL;
+    }
+
+    static class goToFluidGoal extends MoveToBlockGoal {
+        private final AbstractSplashling splashling;
+        private final Block fluidAsBlock;
+
+        goToFluidGoal(AbstractSplashling splashling) {
+            super(splashling, 1.2, 8, 2);
+            this.splashling = splashling;
+            this.fluidAsBlock = splashling.preferredFluid == FluidTags.LAVA? Blocks.LAVA : Blocks.WATER;
+        }
+
+        public boolean isInPreferredFluid() {
+            return !splashling.firstTick && splashling.fluidHeight.getDouble(splashling.preferredFluid) > (double)0.0F;
+        }
+
+        public @NotNull BlockPos getMoveToTarget() {
+            return this.blockPos;
+        }
+
+        public boolean canContinueToUse() {
+            return !isInPreferredFluid() && this.isValidTarget(this.splashling.level(), this.blockPos);
+        }
+
+        public boolean canUse() {
+            return !isInPreferredFluid() && super.canUse();
+        }
+
+        public boolean shouldRecalculatePath() {
+            return this.tryTicks % 20 == 0;
+        }
+
+        protected boolean isValidTarget(LevelReader level, BlockPos pos) {
+            return level.getBlockState(pos).is(fluidAsBlock) && level.getBlockState(pos.above()).isPathfindable(PathComputationType.LAND);
+        }
     }
 
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {

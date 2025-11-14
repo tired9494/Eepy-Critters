@@ -2,6 +2,7 @@ package tired9494.eepy_critters.common.entities;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -28,8 +29,7 @@ import tired9494.eepy_critters.common.registry_helpers.ModEntityTypes;
 public class Splashling extends AbstractSplashling {
 
     public Splashling(EntityType<? extends Animal> entityType, Level level) {
-        super(entityType, level, ModTags.Items.SPLASHLING_FOOD);
-        this.goToFluidGoal = new SplashlingGoToWaterGoal(this, 1.0F);
+        super(entityType, level, ModTags.Items.SPLASHLING_FOOD, FluidTags.WATER);
         this.setPathfindingMalus(PathType.WATER, 0.0F);
     }
 
@@ -54,34 +54,5 @@ public class Splashling extends AbstractSplashling {
     }
     public @NotNull InteractionResult mobInteract(Player player, InteractionHand hand) {
         return Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
-    }
-
-    static class SplashlingGoToWaterGoal extends MoveToBlockGoal {
-        private final Splashling splashling;
-
-        SplashlingGoToWaterGoal(Splashling splashling, double speedModifier) {
-            super(splashling, speedModifier, 8, 2);
-            this.splashling = splashling;
-        }
-
-        public @NotNull BlockPos getMoveToTarget() {
-            return this.blockPos;
-        }
-
-        public boolean canContinueToUse() {
-            return !this.splashling.isInWater() && this.isValidTarget(this.splashling.level(), this.blockPos);
-        }
-
-        public boolean canUse() {
-            return !this.splashling.isInWater() && super.canUse();
-        }
-
-        public boolean shouldRecalculatePath() {
-            return this.tryTicks % 20 == 0;
-        }
-
-        protected boolean isValidTarget(LevelReader level, BlockPos pos) {
-            return level.getBlockState(pos).is(Blocks.WATER) && level.getBlockState(pos.above()).isPathfindable(PathComputationType.LAND);
-        }
     }
 }
